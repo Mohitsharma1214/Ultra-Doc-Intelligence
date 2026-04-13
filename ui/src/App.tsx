@@ -300,9 +300,14 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                 >
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                    {extraction ? (
-                      Object.entries(extraction).map(([key, val]) => (
+                  {extraction ? (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ marginTop: '2rem' }}
+                  >
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                      {Object.entries(extraction).map(([key, val]) => (
                         <motion.div 
                           key={key} 
                           initial={{ opacity: 0, scale: 0.95 }}
@@ -311,10 +316,14 @@ function App() {
                           style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.02)' }}
                         >
                           <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px', letterSpacing: '0.1em' }}>{key.replace('_', ' ')}</div>
-                          <div style={{ fontWeight: '600', color: val ? 'white' : 'var(--text-muted)' }}>{val || 'Not Detected'}</div>
+                          <div style={{ fontWeight: '600', color: val ? 'white' : 'var(--text-muted)', fontSize: '0.9rem', wordBreak: 'break-word' }}>
+                            {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val || 'Not Detected')}
+                          </div>
                         </motion.div>
-                      ))
-                    ) : (
+                      ))}
+                    </div>
+                  </motion.div>
+                ) : (
                       <div style={{ gridColumn: '1 / -1', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: 'var(--text-muted)', opacity: 0.5 }}>
                         <Search size={48} style={{ marginBottom: '1rem' }} />
                         <p>Run Deep Extraction to see structured results</p>
