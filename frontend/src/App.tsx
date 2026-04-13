@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Upload, MessageSquare, Search, FileText, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 interface ExtractionData {
   shipment_id: string | null;
