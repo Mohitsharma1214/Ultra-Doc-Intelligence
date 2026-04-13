@@ -1,13 +1,21 @@
-import chromadb
-from chromadb.utils import embedding_functions
 import os
+import chromadb
 from typing import List, Dict
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
+
+class LCAdapter:
+    def __init__(self, ef): self.ef = ef
+    def __call__(self, input): return self.ef.embed_documents(input)
 
 class VectorStore:
     def __init__(self, db_path: str = "db"):
         self.client = chromadb.PersistentClient(path=db_path)
-        # Using a standard local embedding function
-        self.ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+        # Using Hugging Face Inference API (lightweight, no torch/sentence-transformers)
+        # Ensure HUGGINGFACEHUB_API_TOKEN is set in Vercel environment variables
+        self.ef = LCAdapter(HuggingFaceEndpointEmbeddings(
+            model="sentence-transformers/all-MiniLM-L6-v2",
+            huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN")
+        ))
 
     def create_collection(self, collection_name: str):
         try:

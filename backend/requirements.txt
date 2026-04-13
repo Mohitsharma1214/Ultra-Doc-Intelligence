@@ -6,8 +6,8 @@ pypdf
 python-docx
 pydantic
 python-dotenv
-langchain
-langchain-community
-sentence-transformers
 openai
 pymupdf
+langchain
+langchain-text-splitters
+langchain-huggingface
