@@ -57,8 +57,8 @@ The confidence score is a multi-factor heuristic:
 3. Set environment variable: `export OPENROUTER_API_KEY='your_key'`
 4. `python -m app.main`
 
-### Frontend
-1. `cd frontend`
+### UI
+1. `cd ui`
 2. `npm install`
 3. `npm run dev`
 # Ultra-Doc-Intelligence
