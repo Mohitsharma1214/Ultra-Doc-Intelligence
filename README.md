@@ -1,64 +1,108 @@
-# Ultra Doc-Intelligence PoC
+# Ultra Doc-Intelligence 🚢 🤖
 
-A professional AI-powered system for logistics document processing and natural language interaction. This POC allows users to upload logistics documents (PDF, DOCX, TXT), perform RAG-based Q&A, and extract structured shipment data.
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Mohitsharma1214/Ultra-Doc-Intelligence)
+[![Vercel](https://img.shields.io/badge/Vercel-Hosted_UI-black?logo=vercel)](https://ultra-doc-intelligence-orpin.vercel.app/)
 
-## Architecture
+An institutional-grade logistics intelligence system designed for automated document analysis. This platform enables high-precision RAG-based Q&A, structured data extraction, and real-time confidence scoring for transportation and logistics documentation.
 
-The system follows a modern decoupled architecture:
-- **Backend**: FastAPI (Python) serving as the orchestration layer for document parsing, embedding generation, and LLM interaction.
-- **Vector Storage**: ChromaDB (local persistence) for storing and retrieving document chunks.
-- **Frontend**: React (Typescript) + Vite for a premium, responsive user interface with glassmorphism design.
-- **AI Core**: 
-  - **Embeddings**: `all-MiniLM-L6-v2` (SentenceTransformers) for efficient local similarity search.
-  - **LLM**: Google Gemini 1.5 Flash for high-quality reasoning, grounded Q&A, and structured extraction.
+---
 
-## Core Strategies
+## 🔗 Project Links
 
-### Chunking Strategy
-- **Method**: Recursive Character Text Splitting.
-- **Parameters**: 1000 characters per chunk with a 200-character overlap.
-- **Rationale**: Recursive splitting preserves semantic structure (paragraphs, sentences) better than fixed-size splitting, while the overlap ensures context continuity across chunk boundaries, essential for extracting dates and rates that might span limits.
+*   **GitHub Repository**: [Mohitsharma1214/Ultra-Doc-Intelligence](https://github.com/Mohitsharma1214/Ultra-Doc-Intelligence)
+*   **Hosted UI**: [ultra-doc-intelligence.vercel.app](https://ultra-doc-intelligence-orpin.vercel.app/)
 
-### Retrieval Method
-- **Method**: Semantic Search using Cosine Similarity/L2 Distance.
-- **Top-K**: The top 4 most relevant chunks are retrieved for every query to balance context richness and token efficiency.
+---
 
-### Guardrails Approach
-- **Context Grounding**: The LLM is strictly prompted to answer ONLY from the provided context.
-- **Negative Constraint**: Express instructions to return "Not found in document" if the information is missing.
-- **Confidence Filter**: Answers with a heuristic confidence score below a threshold (or those explicitly stating "not found") are flagged to prevent hallucinations.
+## 🏗️ Architecture
 
-### Confidence Scoring Method
-The confidence score is a multi-factor heuristic:
-1. **Retrieval Similarity**: Based on the distance scores from ChromaDB. Lower distances translate to higher base confidence.
-2. **Answer Coverage**: If the LLM indicates it cannot find the information, the confidence is set to 0.0.
-3. **Normalization**: Scores are normalized to a 0-1 scale.
+The system utilizes a decoupled, high-performance architecture:
 
-## Failure Cases
-1. **Highly Complex Tables**: While Gemini 1.5 Flash is excellent at reasoning, extremely dense or poorly formatted OCR data in PDFs might lead to misaligned extraction of table headers.
-2. **Missing Metadata**: If a document is scanned without OCR (image-only), text extraction may fail unless an OCR layer is added (not included in this base POC).
+*   **Backend**: 
+    *   **Framework**: FastAPI (Python) for asynchronous orchestration.
+    *   **Vector Database**: **ChromaDB** with persistent storage for localized document context.
+    *   **Embeddings**: `sentence-transformers/all-MiniLM-L6-v2` via Hugging Face Inference API (lightweight, zero-footprint).
+    *   **LLM Core**: Large Language Models (e.g., Llama 3/Gemini) integrated via **OpenRouter** for robust reasoning.
+*   **Frontend**: 
+    *   **Framework**: React (Vite) + TypeScript.
+    *   **Styling**: Premium Glassmorphism UI with Framer Motion animations and Lucide-React icons.
 
-## Improvement Ideas
-- **Hybrid Search**: Combine semantic search with BM25 keyword search for better retrieval of specific IDs like `SHIP-123456`.
-- **Iterative Q&A**: Implement a multi-turn conversation memory.
-- **OCR Integration**: Add Tesseract or AWS Textract for handling scanned image PDFs.
-- **Self-Correction**: Use a second LLM pass to verify the extracted JSON against the source text.
+---
 
-## Setup & Running
+## 🔬 Core AI Strategies
 
-### Prerequisites
-- Python 3.9+
-- Node.js & npm
-- OpenRouter API Key (`OPENROUTER_API_KEY`)
+### 1. Chunking Strategy
+*   **Method**: `RecursiveCharacterTextSplitter`.
+*   **Logic**: Splits text by paragraphs, then sentences, and finally characters to preserve semantic boundaries.
+*   **Specs**: 
+    *   `chunk_size`: 1000 characters.
+    *   `chunk_overlap`: 200 characters.
+*   **Rationale**: High overlap ensures that cross-chunk entities (like a freight rate appearing at a split) are captured in at least one full context window, maintaining extraction accuracy.
 
-### Backend
-1. `cd backend`
-2. `pip install -r requirements.txt`
-3. Set environment variable: `export OPENROUTER_API_KEY='your_key'`
-4. `python -m app.main`
+### 2. Retrieval Method
+*   **Semantic Filtering**: Uses Cosine Similarity via ChromaDB.
+*   **Strict Isolation**: Retrieval is strictly filtered by `document_id` in metadata to prevent cross-document context leakage.
+*   **Top-K**: Retrieves the top 8 chunks to provide high density for complex logistics documents.
 
-### UI
-1. `cd ui`
-2. `npm install`
-3. `npm run dev`
-# Ultra-Doc-Intelligence
+### 3. Guardrails Approach
+*   **Prompt-Level**: "STRICTLY GROUNDED" rules force the LLM to refuse answers not explicitly found in text.
+*   **Confident Refusal**: If the LLM returns "Not found," the system bypasses the UI and indicates no results.
+*   **Hallucination Filter**: A runtime threshold of **0.35** is applied. If the calculated confidence is lower, the system returns a standard refusal message rather than a potentially incorrect answer.
+
+### 4. Confidence Scoring Method (Hybrid)
+We use a weighted hybrid algorithm to determine reliability:
+*   **Retrieval Distance (40%)**: Normalized similarity score from the vector store.
+*   **LLM Self-Assessment (60%)**: Internal model certainty based on textual evidence.
+*   **Hard Logic**: Forced 0.0 confidence if "found" signatures are absent.
+
+---
+
+## 🛠️ Local Setup Instructions
+
+### Backend (Python)
+1.  **Clone & Enter**:
+    ```bash
+    git clone https://github.com/Mohitsharma1214/Ultra-Doc-Intelligence.git
+    cd Ultra-Doc-Intelligence/backend
+    ```
+2.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **Environment Setup**: Create a `.env` file:
+    ```env
+    OPENROUTER_API_KEY=your_api_key_here
+    LLM_MODEL=google/gemini-flash-1.5
+    HUGGINGFACEHUB_API_TOKEN=your_hf_token_here
+    ```
+4.  **Run**:
+    ```bash
+    python -m app.main
+    ```
+
+### Frontend (React)
+1.  **Enter UI Dir**:
+    ```bash
+    cd ../ui
+    ```
+2.  **Install**:
+    ```bash
+    npm install
+    ```
+3.  **Dev Run**:
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 📉 Failure Cases & Improvements
+
+### Current Failure Cases
+1.  **Non-OCR PDFs**: Documents that are pure images without text layers (scanned PDFs) will fail text extraction.
+2.  **Overlapping IDs**: When multiple different Shipment IDs exist in the same document with conflicting labels.
+
+### Future Improvement Ideas
+1.  **OCR Layer**: Integrate Tesseract or AWS Textract to handle scanned documents.
+2.  **Hybrid BM25**: Combine semantic search with keyword search for better alphanumeric ID matching.
+3.  **Multi-Modal**: Use vision models to "see" document structure (tables, signatures) directly.
