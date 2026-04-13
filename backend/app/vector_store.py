@@ -2,10 +2,15 @@ import os
 import chromadb
 from typing import List, Dict
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from chromadb import EmbeddingFunction
 
-class LCAdapter:
-    def __init__(self, ef): self.ef = ef
-    def __call__(self, input): return self.ef.embed_documents(input)
+class LCAdapter(EmbeddingFunction):
+    def __init__(self, ef):
+        self.ef = ef
+    def __call__(self, input):
+        return self.ef.embed_documents(input)
+    def name(self):
+        return "langchain_adapter"
 
 class VectorStore:
     def __init__(self, db_path: str = None):
@@ -20,10 +25,7 @@ class VectorStore:
         ))
 
     def create_collection(self, collection_name: str):
-        try:
-            return self.client.create_collection(name=collection_name, embedding_function=self.ef)
-        except Exception:
-            return self.client.get_collection(name=collection_name, embedding_function=self.ef)
+        return self.client.get_or_create_collection(name=collection_name, embedding_function=self.ef)
 
     def add_chunks(self, collection_name: str, chunks: List[str], doc_id: str):
         collection = self.create_collection(collection_name)
