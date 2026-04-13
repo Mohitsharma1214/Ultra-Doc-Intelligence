@@ -37,7 +37,7 @@ class VectorStore:
             metadatas=metadatas
         )
 
-    def query(self, collection_name: str, query_text: str, doc_id: str, n_results: int = 5) -> Dict:
+    def query(self, collection_name: str, query_text: str, doc_id: str, n_results: int = 8) -> Dict:
         collection = self.create_collection(collection_name)
         return collection.query(
             query_texts=[query_text],

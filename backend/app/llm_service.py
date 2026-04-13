@@ -35,7 +35,8 @@ class LLMService:
         1. Base your answer STRICTLY on the text provided below. 
         2. If the answer is not present or you are unsure, say "Not found in document".
         3. Pay close attention to alphanumeric IDs, dates, and currency values.
-        4. If the question asks for a specific ID (like Load ID), look for labels like 'Load #', 'BOL', or 'Tracking'.
+        4. If the question asks for "cost" or "price", look for terms like "Rate", "Agreed Amount", "Total", "Freight", or "Charges".
+        5. If the question asks for a specific ID (like Load ID), look for labels like 'Load #', 'BOL', or 'Tracking'.
         
         Provide your response in JSON format with two keys:
         - "answer": Your detailed answer based on context.
