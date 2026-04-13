@@ -8,7 +8,9 @@ class LCAdapter:
     def __call__(self, input): return self.ef.embed_documents(input)
 
 class VectorStore:
-    def __init__(self, db_path: str = "db"):
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            db_path = os.path.join("/tmp", "db")
         self.client = chromadb.PersistentClient(path=db_path)
         # Using Hugging Face Inference API (lightweight, no torch/sentence-transformers)
         # Ensure HUGGINGFACEHUB_API_TOKEN is set in Vercel environment variables
