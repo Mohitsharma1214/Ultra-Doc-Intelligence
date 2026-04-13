@@ -80,22 +80,29 @@ async def ask_question(request: QuestionRequest):
         confidence_score=qa_result["confidence"]
     )
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "environment": os.getenv("VERCEL_ENV", "local")}
+
 @app.post("/extract", response_model=ExtractionResponse)
 async def extract_data(request: ExtractionRequest):
     document_id = request.document_id
-    # For extraction, we usually want the whole text or key chunks.
-    # In this POC, we'll retrieve all chunks for this doc_id
-    collection = vector_store.create_collection("docs")
-    # This is a bit hacky for ChromaDB without a metadata filter specifically for 'source' == document_id
-    # but we'll assume we can get it. 
-    # Actually, let's just use the query with a very broad search or a specific fetch.
-    
-    results = collection.get(where={"source": document_id})
-    if not results['documents']:
-        raise HTTPException(status_code=404, detail="Document not found.")
-    
-    full_text = "\n".join(results['documents'])
-    return llm_service.extract_structured_data(full_text)
+    try:
+        collection = vector_store.create_collection("docs")
+        results = collection.get(where={"source": document_id})
+        
+        if not results or not results['documents']:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Document {document_id} not found in temporary storage. (Note: Vercel /tmp is ephemeral)"
+            )
+        
+        full_text = "\n".join(results['documents'])
+        return llm_service.extract_structured_data(full_text)
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
